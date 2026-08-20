@@ -38,6 +38,7 @@ gcloud services enable \
   artifactregistry.googleapis.com \
   aiplatform.googleapis.com \
   bigquery.googleapis.com \
+  dataplex.googleapis.com \
   storage.googleapis.com \
   --project="${PROJECT_ID}" --quiet
 

@@ -1,5 +1,7 @@
 google-adk
 google-cloud-storage
 google-cloud-bigquery
+google-cloud-bigquery-storage
+google-cloud-dataplex
 google-genai
 pydantic
