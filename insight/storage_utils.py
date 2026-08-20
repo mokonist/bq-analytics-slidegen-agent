@@ -1,3 +1,4 @@
+import os
 import uuid
 import logging
 import asyncio
@@ -13,20 +14,12 @@ async def upload_data_to_gcs(
     content_type: str = "image/png"
 ) -> str:
     """
-    Uploads binary data to GCS and returns a storage.cloud.google.com URL.
-    This URL requires the user to be authenticated to Google Cloud to view.
-    
-    Args:
-        bucket_name (str): The name of the GCS bucket.
-        data (bytes): The binary data to upload.
-        content_type (str): The MIME type of the data.
-        
-    Returns:
-        str: The URL to the uploaded object.
+    Uploads binary data to GCS and returns a URL.
+    - If PUBLIC_BUCKET is true: returns https://storage.googleapis.com/[BUCKET]/[OBJECT] (public)
+    - If PUBLIC_BUCKET is false: returns https://storage.cloud.google.com/[BUCKET]/[OBJECT] (authenticated)
     """
     try:
         client = get_storage_client()
-        # Use factory pattern (bucket()) instead of get_bucket() which requires more IAM permissions
         bucket = client.bucket(bucket_name)
         
         # Generate a unique filename
@@ -37,13 +30,20 @@ async def upload_data_to_gcs(
         logging.info(f"Uploading image {filename} to bucket {bucket_name}")
         await asyncio.to_thread(blob.upload_from_string, data, content_type=content_type)
         
-        # Return the public/direct URL format
-        # Format: https://storage.googleapis.com/[BUCKET_NAME]/[OBJECT_NAME]
-        url = f"https://storage.googleapis.com/{bucket_name}/{filename}"
-        logging.info(f"Successfully uploaded to {url}")
+        # Determine URL format based on bucket visibility
+        is_public = os.environ.get("PUBLIC_BUCKET", "false").lower() in ("true", "1", "yes")
+        if is_public:
+            # Public access URL: https://storage.googleapis.com/[BUCKET_NAME]/[OBJECT_NAME]
+            url = f"https://storage.googleapis.com/{bucket_name}/{filename}"
+        else:
+            # Authenticated URL: https://storage.cloud.google.com/[BUCKET_NAME]/[OBJECT_NAME]
+            url = f"https://storage.cloud.google.com/{bucket_name}/{filename}"
+            
+        logging.info(f"Successfully uploaded to {url} (public={is_public})")
         return url
         
     except Exception as e:
         logging.error(f"Error uploading to GCS: {str(e)}")
         # Return empty string to signal failure upstream
         return ""
+
