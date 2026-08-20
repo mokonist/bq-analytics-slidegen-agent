@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+# ==============================================================================
+# 引数のパース
+# ==============================================================================
+PUBLIC_BUCKET=false
+
+for arg in "$@"; do
+  case $arg in
+    --public-bucket)
+      PUBLIC_BUCKET=true
+      shift
+      ;;
+  esac
+done
+
 echo "============================================================"
 echo " Starting ADK Cloud Run Deployment Setup"
 echo "============================================================"
@@ -25,7 +39,7 @@ GCS_BUCKET="${GCS_BUCKET:-${PROJECT_ID}-slide-images}"
 echo "Project ID    : ${PROJECT_ID}"
 echo "Region        : ${REGION}"
 echo "Service Name  : ${SERVICE_NAME}"
-echo "GCS Bucket    : ${GCS_BUCKET}"
+echo "GCS Bucket    : ${GCS_BUCKET} (Public: ${PUBLIC_BUCKET})"
 echo "Agent Model   : gemini-3.7-flash"
 echo "Image Model   : gemini-3.1-flash-image"
 echo "============================================================"
@@ -53,6 +67,17 @@ if ! gcloud storage buckets describe "gs://${GCS_BUCKET}" --project="${PROJECT_I
   echo "Bucket gs://${GCS_BUCKET} created."
 else
   echo "Bucket gs://${GCS_BUCKET} already exists."
+fi
+
+# --public-bucket が指定された場合は allUsers に読み取り権限を付与
+if [ "${PUBLIC_BUCKET}" = true ]; then
+  echo "Applying public read access to gs://${GCS_BUCKET} (allUsers: roles/storage.objectViewer)..."
+  gcloud storage buckets add-iam-policy-binding "gs://${GCS_BUCKET}" \
+    --member="allUsers" \
+    --role="roles/storage.objectViewer" --quiet || {
+      echo "Warning: Could not make bucket public. Please check organization policy constraints (e.g. Public Access Prevention)."
+    }
+  echo "Bucket gs://${GCS_BUCKET} is now public."
 fi
 
 # 5. Cloud Run 実行サービスアカウントへの IAM 権限の付与

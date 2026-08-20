@@ -37,9 +37,9 @@ async def upload_data_to_gcs(
         logging.info(f"Uploading image {filename} to bucket {bucket_name}")
         await asyncio.to_thread(blob.upload_from_string, data, content_type=content_type)
         
-        # Return the authenticated URL format as requested
-        # Format: https://storage.cloud.google.com/[BUCKET_NAME]/[OBJECT_NAME]
-        url = f"https://storage.cloud.google.com/{bucket_name}/{filename}"
+        # Return the public/direct URL format
+        # Format: https://storage.googleapis.com/[BUCKET_NAME]/[OBJECT_NAME]
+        url = f"https://storage.googleapis.com/{bucket_name}/{filename}"
         logging.info(f"Successfully uploaded to {url}")
         return url
         
