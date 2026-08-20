@@ -38,7 +38,7 @@ custom_instruction = """
 - テーマに適した `bigquery-public-data` のデータセット・テーブルを特定し、スキーマやカラム定義を確認してください。
 
 ## Step 2: 定量分析クエリの実行（Quantitative Analysis / What）
-- BigQuery Toolset を活用して効率的で正確な SQL クエリを組み立て、実行してください。
+- BigQuery Toolset を活用して効率的で正確な SQL クエリを組み立て、実行してください。実際に `execute_sql` を使って、SQLを発行できます。
 - 単一の集計値だけでなく、時系列トレンド、カテゴリー/セグメント別の比較、シェア、変化率など、多角的な視点から数値を抽出してください。
 
 ## Step 3: 要因分析とストーリーテリング（Why & Deep Insights）
